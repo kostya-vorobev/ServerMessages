@@ -1,4 +1,5 @@
 #include <QCoreApplication>
+#include <QTextCodec>
 #include <QDebug>
 #include <QtSql/QSqlError>
 #include <QDir>
@@ -11,7 +12,8 @@
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
-
+    QTextCodec *codec = QTextCodec::codecForName("CP 866");
+    QTextCodec::setCodecForLocale(codec);
     Server myServer;
     myServer.startServer();
 

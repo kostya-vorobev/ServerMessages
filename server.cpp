@@ -1,6 +1,9 @@
 #include "server.h"
 
+// Используется для управления серверной стороной приложения
 
+/* Конструктор класса без родительского объекта.
+   Конструктор с родительским объектом предназначен для управления временем жизни сервера в зависимости от времени жизни родительского объекта. */
 Server::Server()
     : QObject(nullptr)
     , m_server(nullptr)
@@ -12,6 +15,7 @@ Server::Server(QObject *parent)
 {
 }
 
+// Деструктор, останавливает сервер и освобождает память
 Server::~Server() {
     if (m_server)
     {
@@ -23,20 +27,27 @@ Server::~Server() {
 
 void Server::startServer()
 {
+    // Создаем новый сервер
     m_server = new QTcpServer(this);
 
-
+    // Устанавливаем соединение, чтобы обрабатывать новые входящие клиентские соединения
     connect(m_server, &QTcpServer::newConnection, [&]() {
+        // Принимаем следующее ожидающее соединение от клиента
         auto client = m_server->nextPendingConnection();
 
+        // Обработка готовности к чтению нового сообщения от клиента
         connect(client, &QTcpSocket::readyRead, [=]() {
-
+            // Разбиваем сообщение от клиента на отдельные части для обработки
             QStringList messageParts = QString::fromUtf8(client->readAll()).split("\n");
+            // Получаем имя запрошенной операции
             QString operation = messageParts.value(0).trimmed();
-
-
-
-
+            // Определение типа операции и ее обработка
+            // Обработка регистрации нового пользователя
+            // Обработка входа в систему (аутентификация)
+            // Обработка поиска пользователя
+            // Обработка сохранения сообщения
+            // Обработка проверки новых сообщений
+            // Обработка запроса на получение чатов
 
             if (operation == "register") {
                 QString login = messageParts.value(1).trimmed();
@@ -102,6 +113,8 @@ void Server::startServer()
 
         });
 
+
+        // Обрабатываем отключение клиента от сервера, удаляем клиента после его отключения
         connect(client, &QTcpSocket::disconnected, [=]() {
             if (client->state() == QAbstractSocket::UnconnectedState) {
                 client->deleteLater();
@@ -109,7 +122,8 @@ void Server::startServer()
         });
     });
 
-    if (!m_server->listen(QHostAddress::Any, 4242))  // Используйте нужный вам порт
+    // Пытаемся запустить сервер и прослушивать все доступные сетевые интерфейсы на выбранном порту
+    if (!m_server->listen(QHostAddress::Any, 4242))  // Замените на порт, который вы хотите использовать
         qDebug("Не удалось запустить сервер");
     else
         qDebug("Сервер успешно запущен");
